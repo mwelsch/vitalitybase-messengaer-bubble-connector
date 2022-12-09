@@ -1,0 +1,6 @@
+[DEFAULT]
+personal-id-whitelist=no
+
+[Telegram]
+api_id=12345
+api_hash=abcde12345
