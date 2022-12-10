@@ -12,7 +12,7 @@ class TelegramConnector:
 
     def parse_config(self):
         self.config = configparser.ConfigParser()
-        self.config.read("my_config")
+        self.config.read("config")
         self.telegram_api_id = self.config["Telegram"]["api_id"]
         self.telegram_api_hash = self.config["Telegram"]["api_hash"]
         self.whitelist_enbaled = self.config["DEFAULT"].getboolean("personal-id-whitelist")
