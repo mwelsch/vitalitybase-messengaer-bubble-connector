@@ -1,5 +1,5 @@
 docker image build -t vb-bubble-connector:alpha01 .
-docker run --labe-file ./labels \
+docker run --label-file ./labels \
 --restart unless-stopped \
 --network web \
 --name vb-bubble-connector \
