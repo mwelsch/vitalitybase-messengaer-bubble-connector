@@ -1,0 +1,4 @@
+traefik.http.routers.welsch.rule=Host(`api.welsch.pro`)
+traefik.http.routers.welsch.tls=true
+traefik.http.routers.welsch.tls.certresolver=myresolver
+
