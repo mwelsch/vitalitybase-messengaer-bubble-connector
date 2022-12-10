@@ -72,6 +72,9 @@ def send_image_to_chats():
     telegram_response = tgconnector.send_image_to_chats(request)
     if telegram_response != "200":
         return telegram_response
-    return "Success... hopefully"
+    return "200"
 
 
+if __name__ == "__main__":
+    # //ToDO do we need the debug flag to be true?!
+    app.run(debug=False, host='0.0.0.0', port=5000)

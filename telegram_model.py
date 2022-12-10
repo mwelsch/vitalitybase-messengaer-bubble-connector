@@ -22,21 +22,13 @@ class TelegramHandler:
         if not self.client.is_connected():
             self.client.connect()
         iter_dials = self.client.iter_dialogs()
-        # //ToDo work with dictionary rather than string
-        jsonstring = "{"
+        chats = {
+        }
         for dialog in iter_dials:
             if dialog.name != "":
-                jsonstring += "\n    "
-                jsonstring += str(dialog.id)
-                jsonstring += ": '"
-                jsonstring += dialog.name
-                jsonstring += "',"
-        # remove last comma
-        jsonstring = jsonstring[:len(jsonstring) - 1]
-        jsonstring += "\n}"
-        print(jsonstring)
+                chats[str(dialog.id)] = dialog.name
         self.client.disconnect()
-        return jsonstring
+        return chats
 
     """
     expecting client_ids as array of strings

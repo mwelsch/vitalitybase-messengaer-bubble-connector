@@ -66,13 +66,10 @@ class TelegramConnector:
 
     def get_all_chats(self, request):
         try:
-            print(1)
             model = self.initialize_model(request)
             if isinstance(model, str):
                 return model
-            print(2)
             chats = model.get_chats()
-            print("saölkfd")
             return chats
         except Exception as error:
             return self.handle_unknown_error(error, self.get_all_chats.__qualname__)
@@ -94,7 +91,6 @@ class TelegramConnector:
 
     def initialize_model(self, request):
         try:
-            print(3)
             #Get identifier. This raises a KeyError if no id is provided
             personal_id = request.headers["Personal-ID"]
             #Check if id is authorized
@@ -102,11 +98,9 @@ class TelegramConnector:
                 return "Unauthorized"
             #Create a new model
             model = self._initialize_model_w_loop(personal_id)
-            print(4)
             model.client.connect()
             if model.client.is_user_authorized():
                 model.client.disconnect()
-                print("Seems to be authorized and logged in")
                 return model
             return "The telegram user is not authorized. Probably you need to login with /telegram_login. "
         except Exception as error:
@@ -133,9 +127,6 @@ class TelegramConnector:
             client_ids = ret["clients"]["telegram"]
             image_array = ret["images"]
             image_caption = ret["message"]
-            print(client_ids)
-            print(image_array)
-            print(image_caption)
             model.send_images(client_ids, image_array , image_caption)
             return "200"
         except Exception as error:
