@@ -5,37 +5,42 @@ from flask import Flask, jsonify, request
 
 import authenticator
 import telegram_model
+from connector import TelegramConnector
 
-def parse_config():
-    global telegram_api_id, telegram_api_hash, whitelist_enbaled, whitelist_members
-    config = configparser.ConfigParser()
-    config.read("config")
-    telegram_api_id = int(config["Telegram"]["api_id"])
-    telegram_api_hash = config["Telegram"]["api_hash"]
-    whitelist_enbaled = config["DEFAULT"].getboolean("personal-id-whitelist")
-    if whitelist_enbaled:
-        whitelist_members = authenticator.get_whitelist_members()
-
-
-
-parse_config()
+tgconnector = TelegramConnector()
 app = Flask(__name__)
 
-
+##ToDo handle JSON requests with invalid fields
 
 @app.route("/get_all_chats")
 def get_all_chats():
-    try:
-        personal_id = request.headers["Personal-ID"]
-        if whitelist_enbaled:
-            if personal_id not in whitelist_members:
-                raise Exception("Not a member of whitelist")
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        model = telegram_model.TelegramHandler(personal_id, telegram_api_id, telegram_api_hash, loop)
-        return model.GetChats()
-    except Exception as error:
-        return error
+    chats = {
+        "telegram": tgconnector.get_all_chats(request)
+    }
+    return jsonify(chats)
+
+
+"""
+Sample good json for this
+{
+  "phone": "+4312345"
+}
+the above returns a phone_code_hash which has to be used in further requests:
+{
+  "phone": "+4312345",
+  "code": "asdlkfj",
+  "phone_code_hash": "..."
+}
+{
+  "phone": "+4312345",
+  "code": "65867",
+  "password": "secret",
+  "phone_code_hash": "05a798621f640c815c%"
+}
+"""
+@app.route("/telegram_login", methods=["POST"])
+def telegram_login():
+    return tgconnector.login(request)
 
 
 """
@@ -49,33 +54,24 @@ Sample good json for this
 """
 @app.route("/send_text_to_chats", methods=["POST"])
 def send_text_to_chats():
-    if request.headers["Secret-token"] == security_key:
-        try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            model = telegram_model.TelegramHandler(loop)
-            ret = request.get_json()
-            model.SendTextMessage(ret["clients"]["telegram"],ret["message"])
-            return "200"
-        except Exception as error:
-            return str(error)
-    return "Unauthorized"
+    tgconnector.send_text_to_chats(request)
+    return "200"
 
-
+"""
+sample json to put here
+{
+  "clients": {
+    "telegram":[-742914797]
+  },
+  "images": ["https://mir-s3-cdn-cf.behance.net/project_modules/fs/f40d9575646601.5c52392e99153.jpg", "https://i.imgur.com/bJj8eg2.jpg"],
+  "message": "Some sample text"
+}
+"""
 @app.route("/send_image_to_chats", methods=["POST"])
 def send_image_to_chats():
-    print("1")
-    try:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        model = telegram_model.TelegramHandler(loop)
-        ret = request.get_json()
-        print("2")
-        model.SendImages(ret["clients"]["telegram"],ret["images"],ret["message"])
-    except Exception as error:
-        print("3")
-        print(error)
-        return str(error)
+    telegram_response = tgconnector.send_image_to_chats(request)
+    if telegram_response != "200":
+        return telegram_response
     return "Success... hopefully"
 
 
