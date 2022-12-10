@@ -1,4 +1,4 @@
-traefik.http.routers.welsch.rule=Host(`api.welsch.pro`)
-traefik.http.routers.welsch.tls=true
-traefik.http.routers.welsch.tls.certresolver=myresolver
-
+traefik.http.routers.vb-api.rule=Host(`api.welsch.pro`)
+traefik.http.routers.vb-api.tls=true
+traefik.http.routers.vb-api.tls.certresolver=myresolver
+traefik.http.services.vb-api.loadbalancer.server.port=5000
