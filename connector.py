@@ -39,7 +39,7 @@ class TelegramConnector:
             phone_number = ret['phone']
             # Handle login request without code provided. Asking to send code to phone
             if 'code' not in ret:
-                phone_code_hash = model.client.send_code_request(phone_number).phone_code_hash
+                phone_code_hash = {"phone_code_hash" : model.client.send_code_request(phone_number).phone_code_hash}
                 model.client.disconnect()
                 return phone_code_hash
             code = ret['code']
