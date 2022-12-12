@@ -1,5 +1,6 @@
 import asyncio
 import configparser
+import json
 
 from telethon.errors import SessionPasswordNeededError
 
@@ -88,6 +89,8 @@ class TelegramConnector:
             ret = request.get_json()
             # tell model to send messages
             logger.log("Calling sendtxtmsgs")
+            logger.log("Json i got:")
+            logger.log(json.dumps(ret))
             model.send_text_message(ret["clients"]["telegram"], ret["message"])
             return "200"
         except Exception as error:
