@@ -5,6 +5,8 @@ from telethon.sync import TelegramClient
 import wget
 import hashlib
 
+import logger
+
 
 class TelegramHandler:
     def __init__(self, personal_id, api_id, api_hash, loop):
@@ -36,9 +38,11 @@ class TelegramHandler:
     """
 
     def send_text_message(self, client_ids, text):
+        logger.log("send_text_message")
         if not self.client.is_connected():
             self.client.connect()
         for id in client_ids:
+            logger.log("sending" + str(id) + "Text: "+str(text))
             self.client.send_message(id, text)
         self.client.disconnect()
 
@@ -49,6 +53,7 @@ class TelegramHandler:
     """
 
     def send_images(self, client_ids, image_paths, caption_text):
+        logger.log("send_images")
         if not self.client.is_connected():
             self.client.connect()
         paths = []

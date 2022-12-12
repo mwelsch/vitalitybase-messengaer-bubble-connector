@@ -3,7 +3,7 @@ import configparser
 
 from flask import Flask, jsonify, request
 
-import authenticator
+import logger
 import telegram_model
 from connector import TelegramConnector
 
@@ -69,6 +69,7 @@ sample json to put here
 """
 @app.route("/send_image_to_chats", methods=["POST"])
 def send_image_to_chats():
+    logger.log("askjdflkasdf")
     telegram_response = tgconnector.send_image_to_chats(request)
     if telegram_response != "200":
         return telegram_response

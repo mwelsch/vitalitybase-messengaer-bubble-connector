@@ -3,6 +3,7 @@ import configparser
 
 from telethon.errors import SessionPasswordNeededError
 
+import logger
 import telegram_model
 
 
@@ -77,13 +78,16 @@ class TelegramConnector:
     def send_text_to_chats(self, request):
         try:
             # initialize the telegram model
+            logger.log("initializing")
             model = self.initialize_model(request)
             # if an error occured a string is returned.
             if isinstance(model, str):
+                logger.log("model is instance of str")
                 return model
             # parse json
             ret = request.get_json()
             # tell model to send messages
+            logger.log("Calling sendtxtmsgs")
             model.send_text_message(ret["clients"]["telegram"], ret["message"])
             return "200"
         except Exception as error:
