@@ -20,7 +20,7 @@ def get_all_chats():
     return jsonify(chats)
 
 
-"""
+"""https://api.welsch.pro/get_all_chats
 Sample good json for this
 {
   "phone": "+4312345"
@@ -40,7 +40,7 @@ the above returns a phone_code_hash which has to be used in further requests:
 """
 @app.route("/telegram_login", methods=["POST"])
 def telegram_login():
-    return tgconnector.login(request)
+    return jsonify(tgconnector.login(request))
 
 
 """
@@ -77,4 +77,4 @@ def send_image_to_chats():
 
 if __name__ == "__main__":
     # //ToDO do we need the debug flag to be true?!
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
