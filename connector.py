@@ -13,6 +13,9 @@ class TelegramConnector:
         self.parse_config()
 
     def parse_config(self):
+        """
+        Parses the config file and stores the required values in the object
+        """
         self.config = configparser.ConfigParser()
         self.config.read("config")
         self.telegram_api_id = self.config["Telegram"]["api_id"]
@@ -22,53 +25,64 @@ class TelegramConnector:
             self.whitelist_members = get_whitelist_members()
 
     def personal_id_authorized(self, personal_id):
+        """
+        Checks if the provided personal_id is authorized to use the service
+
+        Parameters:
+        personal_id (str): The personal_id to be checked
+
+        Returns:
+        bool: True if the personal_id is authorized, False otherwise
+        """
         if self.whitelist_enbaled:
             if personal_id not in self.whitelist_members:
                 return False
         return True
 
     def login(self, request):
+        """
+        Handles a login request
+
+        Parameters:
+        request (flask.Request): The request object containing the login data
+
+        Returns:
+        str: The status of the request. This can be a success message or an error message.
+        dict: with the phone_code_hash which is required for further logins
+        """
         try:
+            # Get the personal_id from the request header
             personal_id = request.headers["Personal-ID"]
+            # Check if the personal_id is authorized
             if not self.personal_id_authorized(personal_id):
                 return "Unauthorized. Guess this is an API-ID/Hash issue"
+            # Initialize the telegram model
             model = self._initialize_model_w_loop(personal_id)
-            model.client.connect()
-            if model.client.is_user_authorized():
-                model.client.disconnect()
+            # If the user is already authorized, return a message indicating so
+            if model.is_user_authorized():
                 return "Already logged in"
+            # Parse the login data from the request body
             ret = request.get_json()
             phone_number = ret['phone']
             # Handle login request without code provided. Asking to send code to phone
             if 'code' not in ret:
-                phone_code_hash = {"phone_code_hash" : model.client.send_code_request(phone_number).phone_code_hash}
-                model.client.disconnect()
-                return phone_code_hash
+                return model.login(phone_number)
+            # Login with code provided
             code = ret['code']
             phone_code_hash = ret['phone_code_hash']
-            try:
-                model.client.sign_in(phone_number, code, phone_code_hash=phone_code_hash)
-                model.client.disconnect()
-                return "200"
-            except SessionPasswordNeededError:
-                if 'password' in ret:
-                    password = ret['password']
-                    try:
-                        model.client.sign_in(password=password)
-                        model.client.disconnect()
-                        return "200"
-                    except Exception as error:
-                        model.client.disconnect()
-                        self.handle_unknown_error(error, self.login.__qualname__)
-                        return "Probably wrong password."
+            if 'password' in ret:
+                password = ret['password']
+                return model.login(phone_number, code, phone_code_hash, password)
+            return model.login(phone_number, code, phone_code_hash)
         except Exception as error:
+            # If the error is a KeyError, the request header is probably missing the personal_id
             if isinstance(error, KeyError):
-                return "KeyError. Proably no 'Personal-ID' header was provided. The error was logged to the output of the server"
+                return "KeyError. Probably no 'Personal-ID' header was provided."
             return self.handle_unknown_error(error, self.login.__qualname__)
 
     def get_all_chats(self, request):
         try:
-            model = self.initialize_model(request)
+            model = self._initialize_model(request)
             if isinstance(model, str):
                 return model
             chats = model.get_chats()
@@ -80,7 +94,7 @@ class TelegramConnector:
         try:
             # initialize the telegram model
             logger.log("initializing")
-            model = self.initialize_model(request)
+            model = self._initialize_model(request)
             # if an error occured a string is returned.
             if isinstance(model, str):
                 logger.log("model is instance of str")
@@ -96,7 +110,7 @@ class TelegramConnector:
         except Exception as error:
             return self.handle_unknown_error(error, self.send_text_to_chats.__qualname__)
 
-    def initialize_model(self, request):
+    def _initialize_model(self, request):
         try:
             #Get identifier. This raises a KeyError if no id is provided
             personal_id = request.headers["Personal-ID"]
@@ -105,15 +119,13 @@ class TelegramConnector:
                 return "Unauthorized"
             #Create a new model
             model = self._initialize_model_w_loop(personal_id)
-            model.client.connect()
-            if model.client.is_user_authorized():
-                model.client.disconnect()
+            if model.is_user_authorized():
                 return model
             return "The telegram user is not authorized. Probably you need to login with /telegram_login. "
         except Exception as error:
             if isinstance(error, KeyError):
                 return "KeyError. Proably no 'Personal-ID' header was provided. The error was logged to the output of the server"
-            return self.handle_unknown_error(error, self.initialize_model.__qualname__)
+            return self.handle_unknown_error(error, self._initialize_model.__qualname__)
 
     def _initialize_model_w_loop(self, personal_id):
         loop = asyncio.new_event_loop()
@@ -124,7 +136,7 @@ class TelegramConnector:
     def send_image_to_chats(self, request):
         try:
             # initialize the telegram model
-            model = self.initialize_model(request)
+            model = self._initialize_model(request)
             # if an error occured a string is returned.
             if isinstance(model, str):
                 return model
