@@ -20,7 +20,7 @@ def get_all_chats():
     return jsonify(chats)
 
 @app.route("/get_telegram_chats")
-def get_all_chats():
+def get_telegram_chats():
     return jsonify(tgconnector.get_all_chats(request))
 
 """https://api.welsch.pro/get_all_chats
