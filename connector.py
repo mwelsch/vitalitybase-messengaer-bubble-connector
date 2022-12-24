@@ -100,6 +100,7 @@ class TelegramConnector:
                 logger.log("model is instance of str")
                 return model
             # parse json
+            logger.log("Calling sendtxtmsgs")
             ret = request.get_json()
             # tell model to send messages
             logger.log("Calling sendtxtmsgs")
