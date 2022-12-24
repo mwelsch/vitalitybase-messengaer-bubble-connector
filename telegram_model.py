@@ -188,3 +188,6 @@ class TelegramHandler:
             except:
                 ids.append(id)
         return ids
+
+    def disconnect(self):
+        self.client.disconnect()

@@ -1,6 +1,7 @@
 import asyncio
 import configparser
 import json
+from sqlite3 import OperationalError
 
 from telethon.errors import SessionPasswordNeededError
 
@@ -78,7 +79,7 @@ class TelegramConnector:
             # If the error is a KeyError, the request header is probably missing the personal_id
             if isinstance(error, KeyError):
                 return "KeyError. Probably no 'Personal-ID' header was provided."
-            return self.handle_unknown_error(error, self.login.__qualname__)
+            return self.handle_unknown_error(error, self.login.__qualname__, model)
 
     def get_all_chats(self, request):
         try:
@@ -88,7 +89,7 @@ class TelegramConnector:
             chats = model.get_chats()
             return chats
         except Exception as error:
-            return self.handle_unknown_error(error, self.get_all_chats.__qualname__)
+            return self.handle_unknown_error(error, self.get_all_chats.__qualname__, model)
 
     def send_text_to_chats(self, request):
         try:
@@ -109,7 +110,7 @@ class TelegramConnector:
             model.send_text_message(ret["clients"]["telegram"], ret["message"])
             return "200"
         except Exception as error:
-            return self.handle_unknown_error(error, self.send_text_to_chats.__qualname__)
+            return self.handle_unknown_error(error, self.send_text_to_chats.__qualname__, model)
 
     def _initialize_model(self, request):
         try:
@@ -131,7 +132,12 @@ class TelegramConnector:
     def _initialize_model_w_loop(self, personal_id):
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        model = telegram_model.TelegramHandler(personal_id, self.telegram_api_id, self.telegram_api_hash, loop)
+        try:
+
+            model = telegram_model.TelegramHandler(personal_id, self.telegram_api_id, self.telegram_api_hash, loop)
+        except OperationalError as error:
+            self.handle_unknown_error(error, self._initialize_model_w_loop.__qualname__)
+            return "Locked. Need a proper garbage collector..."
         return model
 
     def send_image_to_chats(self, request):
@@ -150,15 +156,18 @@ class TelegramConnector:
             model.send_images(client_ids, image_array , image_caption)
             return "200"
         except Exception as error:
-            return self.handle_unknown_error(error, self.send_image_to_chats.__qualname__)
+            return self.handle_unknown_error(error, self.send_image_to_chats.__qualname__, model)
 
     @staticmethod
-    def handle_unknown_error(error, location):
+    def handle_unknown_error(error, location, model=None):
         logger.log("Error Details:")
         logger.log(error)
         logger.log(type(error))
         logger.log("Location Details:")
         logger.log(location)
+        if model is not None:
+            logger.log("Disconnectiong model...")
+            model.disconnect()
         # //ToDo log unhandled errors somewhere
         return "Some unhandled error. Please contact admin"
 
