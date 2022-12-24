@@ -154,11 +154,11 @@ class TelegramConnector:
 
     @staticmethod
     def handle_unknown_error(error, location):
-        print("Error Details:")
-        print(error)
-        print(type(error))
-        print("Location Details:")
-        print(location)
+        logger.log("Error Details:")
+        logger.log(error)
+        logger.log(type(error))
+        logger.log("Location Details:")
+        logger.log(location)
         # //ToDo log unhandled errors somewhere
         return "Some unhandled error. Please contact admin"
 
