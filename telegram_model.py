@@ -55,6 +55,7 @@ class TelegramHandler:
         self._connect_if_not_connected()
         for id in client_ids:
             logger.log("sending" + str(id) + "Text: " + str(text))
+            logger.log("Type of id: " + str(type(id)))
             self.client.send_message(id, text)
         self.client.disconnect()
         return "200"
