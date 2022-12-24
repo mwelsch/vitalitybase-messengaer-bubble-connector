@@ -19,6 +19,9 @@ def get_all_chats():
     }
     return jsonify(chats)
 
+@app.route("/get_telegram_chats")
+def get_all_chats():
+    return jsonify(tgconnector.get_all_chats(request))
 
 """https://api.welsch.pro/get_all_chats
 Sample good json for this
@@ -61,7 +64,7 @@ def send_text_to_chats():
 sample json to put here
 {
   "clients": {
-    "telegram":[-742914797]
+    "telegram":[551698821]
   },
   "images": ["https://mir-s3-cdn-cf.behance.net/project_modules/fs/f40d9575646601.5c52392e99153.jpg", "https://i.imgur.com/bJj8eg2.jpg"],
   "message": "Some sample text"
@@ -69,7 +72,6 @@ sample json to put here
 """
 @app.route("/send_image_to_chats", methods=["POST"])
 def send_image_to_chats():
-    logger.log("askjdflkasdf")
     telegram_response = tgconnector.send_image_to_chats(request)
     if telegram_response != "200":
         return telegram_response
