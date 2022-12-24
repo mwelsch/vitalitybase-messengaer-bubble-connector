@@ -139,6 +139,7 @@ class TelegramHandler:
        Returns:
        list: A list of local paths corresponding to the image URLs.
        """
+        image_paths = image_paths.split()
         paths = []
         for URL in image_paths:
             # using hashsum as valid file name
@@ -180,7 +181,9 @@ class TelegramHandler:
 
     @staticmethod
     def make_client_ids_valid(client_ids):
+        logger.log(client_ids)
         client_ids = client_ids.split(",")
+        logger.log(client_ids)
         logger.log("Trying to convert each id to an int. If failing it will stay as string")
         ids = []
         for id in client_ids:
@@ -188,6 +191,7 @@ class TelegramHandler:
                 ids.append(int(id))
             except:
                 ids.append(id)
+        logger.log(ids)
         return ids
 
     def disconnect(self):
