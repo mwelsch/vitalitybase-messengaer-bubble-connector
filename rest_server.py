@@ -50,7 +50,7 @@ def telegram_login():
 Sample good json for this
 {
   "clients": {
-    "telegram":[-742914797]
+    "telegram": "-742914797, 551698821"
   },
   "message": "Some sample text"
 }
@@ -64,7 +64,7 @@ def send_text_to_chats():
 sample json to put here
 {
   "clients": {
-    "telegram":[551698821]
+    "telegram": "-742914797, 551698821"
   },
   "images": ["https://mir-s3-cdn-cf.behance.net/project_modules/fs/f40d9575646601.5c52392e99153.jpg", "https://i.imgur.com/bJj8eg2.jpg"],
   "message": "Some sample text"

@@ -79,7 +79,7 @@ class TelegramHandler:
         logger.log("send_images")
         self._connect_if_not_connected()
         paths = self.convert_image_urls_to_local_paths(image_paths)
-        client_ids = self.check_client_ids_validity(client_ids)
+        client_ids = self.make_client_ids_valid(client_ids)
         for id in client_ids:
             # providing IDs as string does not seem to be an option. Fuck this
             self.client.send_file(int(id), paths, caption=caption_text)
@@ -179,7 +179,8 @@ class TelegramHandler:
         return is_authorized
 
     @staticmethod
-    def check_client_ids_validity(client_ids):
+    def make_client_ids_valid(client_ids):
+        client_ids = client_ids.split(",")
         logger.log("Trying to convert each id to an int. If failing it will stay as string")
         ids = []
         for id in client_ids:
