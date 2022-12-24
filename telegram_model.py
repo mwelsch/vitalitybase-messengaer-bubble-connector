@@ -6,6 +6,8 @@ from telethon.sync import TelegramClient
 import wget
 import hashlib
 import logger
+
+
 # Thanks to ChagtGPT for suggesting comments :)
 
 
@@ -19,6 +21,7 @@ class TelegramHandler:
    api_hash (str): The API hash for the telegram API.
    loop (asyncio.AbstractEventLoop): The event loop for this handler.
    """
+
     def __init__(self, personal_id, api_id, api_hash, loop):
         # Create a new session file using the personal_id as a unique identifier
         session_file = hashlib.sha512(personal_id.encode()).hexdigest()
@@ -52,6 +55,7 @@ class TelegramHandler:
     # Send a text message to the specified clients
     def send_text_message(self, client_ids, text):
         logger.log("send_text_message")
+        client_ids = self.check_client_ids_validity(client_ids)
         self._connect_if_not_connected()
         for id in client_ids:
             logger.log("sending" + str(id) + "Text: " + str(text))
@@ -75,8 +79,10 @@ class TelegramHandler:
         logger.log("send_images")
         self._connect_if_not_connected()
         paths = self.convert_image_urls_to_local_paths(image_paths)
+        client_ids = self.check_client_ids_validity(client_ids)
         for id in client_ids:
-            self.client.send_file(id, paths, caption=caption_text)
+            # providing IDs as string does not seem to be an option. Fuck this
+            self.client.send_file(int(id), paths, caption=caption_text)
         self.client.disconnect()
         # we delete all images afterwords. idk if this is a good idea, but I dont think we work with static files of similarely
         self.delete_all_images(paths)
@@ -171,3 +177,14 @@ class TelegramHandler:
         is_authorized = self.client.is_user_authorized()
         self.client.disconnect()
         return is_authorized
+
+    @staticmethod
+    def check_client_ids_validity(client_ids):
+        logger.log("Trying to convert each id to an int. If failing it will stay as string")
+        ids = []
+        for id in client_ids:
+            try:
+                ids.append(int(id))
+            except:
+                ids.append(id)
+        return ids

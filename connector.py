@@ -100,12 +100,12 @@ class TelegramConnector:
                 logger.log("model is instance of str")
                 return model
             # parse json
-            logger.log("Calling sendtxtmsgs")
+            logger.log("Parsing Json...")
             ret = request.get_json()
             # tell model to send messages
-            logger.log("Calling sendtxtmsgs")
             logger.log("Json i got:")
             logger.log(json.dumps(ret))
+            logger.log("Calling send_text_message")
             model.send_text_message(ret["clients"]["telegram"], ret["message"])
             return "200"
         except Exception as error:
